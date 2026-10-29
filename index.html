@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Server Response Time Prediction — Statistical Regression Dashboard</title>
+  <meta name="description" content="Micro Project 13: Server Response Time Prediction Using Multiple Linear Regression Models. Applied statistics, hypothesis testing, and OLS regression analysis.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="navbar" id="mainNavbar">
+    <div class="brand-wrapper">
+      <div class="brand-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+          <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+          <line x1="6" y1="6" x2="6.01" y2="6"></line>
+          <line x1="6" y1="18" x2="6.01" y2="18"></line>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>Server Response Time Prediction</h1>
+        <span class="brand-badge">Micro Project 13 • Applied Statistics & System Modeling</span>
+      </div>
+    </div>
+
+    <ul class="nav-links">
+      <li><button class="nav-btn active" data-target="secPredictor">Predictor & QoS</button></li>
+      <li><button class="nav-btn" data-target="secOlsStats">OLS Statistics</button></li>
+      <li><button class="nav-btn" data-target="secVisuals">Statistical Charts</button></li>
+      <li><button class="nav-btn" data-target="secOutputsGallery">Outputs Gallery</button></li>
+    </ul>
+
+    <div class="system-status">
+      <div class="status-indicator"></div>
+      <span>Dataset: 5,000 Records • OLS Engine Active</span>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="app-container">
+
+    <!-- Academic Metadata Banner -->
+    <header class="academic-banner" id="academicBanner">
+      <div class="academic-info">
+        <h2>Multiple Linear Regression for Server Latency Forecasting</h2>
+        <p>
+          A statistical performance modeling study analyzing cloud workload parameters (CPU, memory, concurrent users, throughput) and execution queue dynamics. Demonstrates why workload metrics alone yield R² = 0.002, whereas incorporating predicted task execution duration achieves R² = 0.944 with verified homoscedasticity.
+        </p>
+      </div>
+    </header>
+
+    <!-- Section 1: Interactive Workload Predictor & QoS Monitor -->
+    <section class="dashboard-grid" id="secPredictor">
+      
+      <!-- Left Panel: Workload Input Sliders -->
+      <div class="card control-card" id="controlPanelCard">
+        <div class="section-header">
+          <h3>
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--primary-blue);">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+            </svg>
+            Workload Input Parameters
+          </h3>
+          <span class="tag">Live Calculation</span>
+        </div>
+
+        <!-- Presets -->
+        <div class="presets-bar" id="presetsBar">
+          <button class="preset-chip active" data-preset="normal">Steady State</button>
+          <button class="preset-chip" data-preset="flash">Traffic Surge</button>
+          <button class="preset-chip" data-preset="ddos">High Load Stress</button>
+          <button class="preset-chip" data-preset="batch">Batch Processing</button>
+        </div>
+
+        <!-- Slider 1: CPU Utilization -->
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span class="slider-title">CPU Utilization (%)</span>
+            <span class="slider-val-badge" id="cpuVal">50%</span>
+          </div>
+          <input type="range" class="range-slider" id="cpuRange" min="10" max="90" value="50" step="1">
+        </div>
+
+        <!-- Slider 2: Memory Consumption -->
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span class="slider-title">Memory Consumption (MB)</span>
+            <span class="slider-val-badge" id="memVal">4,200 MB</span>
+          </div>
+          <input type="range" class="range-slider" id="memRange" min="500" max="8000" value="4200" step="50">
+        </div>
+
+        <!-- Slider 3: Active Users -->
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span class="slider-title">Concurrent Active Users</span>
+            <span class="slider-val-badge" id="usersVal">2,500</span>
+          </div>
+          <input type="range" class="range-slider" id="usersRange" min="100" max="5000" value="2500" step="50">
+        </div>
+
+        <!-- Slider 4: Network Bandwidth -->
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span class="slider-title">Network Bandwidth Utilization (Mbps)</span>
+            <span class="slider-val-badge" id="bwVal">500 Mbps</span>
+          </div>
+          <input type="range" class="range-slider" id="bwRange" min="50" max="1000" value="500" step="10">
+        </div>
+
+        <!-- Slider 5: System Throughput -->
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span class="slider-title">System Throughput (tasks/sec)</span>
+            <span class="slider-val-badge" id="tpVal">5.0 /s</span>
+          </div>
+          <input type="range" class="range-slider" id="tpRange" min="1.0" max="10.0" value="5.0" step="0.1">
+        </div>
+
+        <!-- Slider 6: Error Rate -->
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span class="slider-title">Error Rate (%)</span>
+            <span class="slider-val-badge" id="errVal">2.5%</span>
+          </div>
+          <input type="range" class="range-slider" id="errRange" min="0" max="5.0" value="2.5" step="0.1">
+        </div>
+
+        <!-- Slider 7: Queue Waiting Time -->
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span class="slider-title">Task Waiting Time (ms)</span>
+            <span class="slider-val-badge" id="waitVal">50 ms</span>
+          </div>
+          <input type="range" class="range-slider" id="waitRange" min="0" max="500" value="50" step="5">
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-btn-row">
+          <button class="btn-secondary" id="btnSimulate" onclick="toggleLiveSimulation()">
+            <span>▶</span> Run Telemetry Simulation
+          </button>
+          <button class="btn-secondary" onclick="exportProjectSummary()">
+            <span>🖨</span> Print / Export Summary
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Right Panel: Real-Time Prediction & SLA Monitor -->
+      <div class="card telemetry-card" id="telemetryCard">
+        
+        <!-- Primary Estimated Response Time Banner -->
+        <div class="primary-metric-banner">
+          <div class="metric-title-small" id="activeModelLabel">Scenario A (Multiple LR: Workload Only)</div>
+          <div class="metric-hero-value">
+            <span id="predictedValue">3,016</span>
+            <span class="metric-unit">ms</span>
+          </div>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+            Estimated Server Response Time [Task Waiting Time + Task Execution Time]
+          </div>
+
+          <!-- Gauge Indicator -->
+          <div class="gauge-container">
+            <div class="gauge-track">
+              <div class="gauge-bar" id="gaugeBar"></div>
+            </div>
+            <div class="gauge-markers">
+              <span>0 ms</span>
+              <span>1500 ms (Fast)</span>
+              <span>3000 ms (SLA Limit)</span>
+              <span>6000 ms</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLA Alert & Web Engineering Decision Box -->
+        <div class="sla-status-box" id="slaStatusBox">
+          <div class="sla-badge safe" id="slaBadge">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <span id="slaText">Within SLA (Optimal QoS)</span>
+          </div>
+          <div class="qos-recommendation" id="qosRecommendation">
+            <strong>System Action:</strong> Normal request routing. Server resource utilization is within safe operational limits.
+          </div>
+        </div>
+
+        <!-- Multi-Model Comparison Cards -->
+        <div>
+          <div style="font-size: 0.88rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem;">
+            Model Comparison (Click card to select active model)
+          </div>
+          <div class="models-comparison-grid">
+            
+            <div class="model-stat-card active-model" id="cardScenarioA" onclick="switchModelMode('scenarioA')" style="cursor: pointer;">
+              <div class="model-stat-name">Scenario A (Workload Only)</div>
+              <div class="model-stat-val" id="compValA">3,016 ms</div>
+              <div class="model-stat-sub">R² = 0.002 • RMSE = 1,446.7 ms</div>
+            </div>
+
+            <div class="model-stat-card" id="cardScenarioB" onclick="switchModelMode('scenarioB')" style="cursor: pointer;">
+              <div class="model-stat-name">Scenario B (+ Predicted Duration)</div>
+              <div class="model-stat-val" id="compValB">2,985 ms</div>
+              <div class="model-stat-sub">R² = 0.944 • RMSE = 344.6 ms</div>
+            </div>
+
+            <div class="model-stat-card" id="cardSimpleLR">
+              <div class="model-stat-name">Simple LR (Queue Wait Only)</div>
+              <div class="model-stat-val" id="compValS">3,012 ms</div>
+              <div class="model-stat-sub">R² = 0.001 • RMSE = 1,447.2 ms</div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- Section 2: Statistical Validation & OLS Summary -->
+    <section class="analytics-section" id="secOlsStats">
+      <div class="section-header">
+        <h3>
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--primary-blue);">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          Ordinary Least Squares (OLS) Regression & Hypothesis Testing
+        </h3>
+        <span class="tag">Significance Level α = 0.05</span>
+      </div>
+
+      <!-- KPI Row -->
+      <div class="metrics-kpi-row">
+        <div class="kpi-card">
+          <span class="kpi-title">Coefficient of Determination (R²)</span>
+          <span class="kpi-value" id="kpiR2">0.002</span>
+          <span class="kpi-desc" id="kpiAdjR2">Adjusted R² = 0.000</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">Root Mean Squared Error (RMSE)</span>
+          <span class="kpi-value" id="kpiRmse">1,446.7 ms</span>
+          <span class="kpi-desc">5-Fold Cross-Validated</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">Mean Absolute Error (MAE)</span>
+          <span class="kpi-value" id="kpiMae">1,215.3 ms</span>
+          <span class="kpi-desc">Average Residual Magnitude</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">Model F-Statistic</span>
+          <span class="kpi-value" id="kpiFstat">1.05</span>
+          <span class="kpi-desc" id="kpiFpval">p-value = 0.398 (Fail to reject H₀)</span>
+        </div>
+      </div>
+
+      <!-- Statistical Table -->
+      <div class="table-responsive">
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th>Predictor Parameter (Xⱼ)</th>
+              <th>Regression Coef (βⱼ)</th>
+              <th>Standard Error (SE)</th>
+              <th>t-Statistic</th>
+              <th>p-Value (P &gt; |t|)</th>
+              <th>95% Confidence Interval</th>
+              <th>Significance</th>
+            </tr>
+          </thead>
+          <tbody id="olsTableBody">
+            <!-- Populated dynamically by app.js -->
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <!-- Section 3: Visual Analytics Canvas -->
+    <section class="analytics-section" id="secVisuals">
+      <div class="section-header">
+        <h3>
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--primary-blue);">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          Statistical Visualizations & Residual Diagnostics
+        </h3>
+        <span class="tag">Interactive Canvas Charts</span>
+      </div>
+
+      <div class="charts-grid">
+        
+        <!-- Chart 1: Actual vs Predicted -->
+        <div class="card chart-card">
+          <div class="chart-header">
+            <h4>Actual vs Predicted Latency (OLS Regression)</h4>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <span id="badgeLivePred" class="tag" style="background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;">● Live: 3,016 ms</span>
+              <span style="font-size: 0.75rem; color: #2563eb; font-weight: 500;">● A (Workload)</span>
+              <span style="font-size: 0.75rem; color: #059669; font-weight: 500;">● B (+Duration)</span>
+              <span style="font-size: 0.75rem; color: #dc2626; font-weight: 500;">-- Ideal y = x</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartActualVsPred"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Residuals -->
+        <div class="card chart-card">
+          <div class="chart-header">
+            <h4>Residual Plot e = y - ŷ (Homoscedasticity Analysis)</h4>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <span id="badgeLiveResidual" class="tag" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1;">Residual: +15 ms</span>
+              <span style="font-size: 0.75rem; color: #64748b;">Zero-Mean Baseline</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartResiduals"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 3: Correlation Matrix Heatmap -->
+        <div class="card chart-card">
+          <div class="chart-header">
+            <h4>Workload Pearson Correlation Matrix</h4>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <button class="chart-toggle-pill active" id="btnToggleHeatmap" onclick="toggleCorrelationChartMode('heatmap')">2D Matrix</button>
+              <button class="chart-toggle-pill" id="btnToggleBars" onclick="toggleCorrelationChartMode('bars')">Impact Bars</button>
+              <span id="badgeLiveDominant" class="tag" style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe;">Driver: Queue Wait</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartCorrelation"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 4: Distribution & Normality -->
+        <div class="card chart-card">
+          <div class="chart-header">
+            <h4>Response Time Distribution & Normal Overlay</h4>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <span id="badgeLivePercentile" class="tag" style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe;">Percentile: 50%</span>
+              <span style="font-size: 0.75rem; color: #64748b;">Gaussian PDF</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartDistribution"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 4: Python Generated Diagnostic Outputs Gallery ('outputs/' Directory) -->
+    <section class="analytics-section" id="secOutputsGallery">
+      <div class="section-header">
+        <h3>
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--primary-blue);">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          Python Diagnostic Figures (<code style="color: var(--primary-blue); font-size: 0.95rem;">outputs/</code>)
+        </h3>
+        <span class="tag">Generated by server_response_time_regression.py</span>
+      </div>
+
+      <!-- Featured Master 2x2 Dashboard Card -->
+      <div class="gallery-featured-card" onclick="openLightbox('outputs/00_master_regression_dashboard.png', '00_master_regression_dashboard.png — Master Diagnostic Dashboard', 'Complete 2x2 diagnostic grid generated by matplotlib: Response Time Distribution with Normal Fit, Pearson Correlation Heatmap, Actual vs Predicted Latency (Scenario A vs Scenario B), and OLS Residuals.')">
+        <div class="featured-img-container">
+          <img src="outputs/00_master_regression_dashboard.png" alt="Master Diagnostic Dashboard" loading="lazy">
+          <div class="gallery-overlay-badge">
+            Click to View High-Resolution Figure
+          </div>
+        </div>
+        <div class="featured-caption">
+          <div>
+            <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">00_master_regression_dashboard.png — Master 2x2 Diagnostic Figure</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+              Full diagnostic figure generated by python script: Response Time Distribution + 2D Correlation Heatmap + Actual vs Predicted Latency + Residual Scatter.
+            </div>
+          </div>
+          <button class="btn-secondary" style="font-size: 0.82rem; padding: 0.5rem 1rem;">
+            View Full Size ↗
+          </button>
+        </div>
+      </div>
+
+      <!-- 7 Individual Output Plots Grid -->
+      <div class="gallery-grid">
+
+        <!-- 1. Distribution -->
+        <div class="gallery-card" onclick="openLightbox('outputs/01_response_time_distribution.png', '01_response_time_distribution.png — Response Time Distribution', 'Histogram of N=5,000 response times fitted with a continuous Gaussian probability density function (PDF). Highlights skewness and normality diagnosis.')">
+          <div class="gallery-thumb-wrap">
+            <img src="outputs/01_response_time_distribution.png" alt="Distribution Plot" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <div class="gallery-card-title">01_response_time_distribution.png</div>
+            <div class="gallery-card-desc">Continuous probability density function overlaying 40-bin response time histogram.</div>
+            <div class="gallery-card-footer">
+              <span>Normality Assessment</span>
+              <span>Enlarge ↗</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Correlation Heatmap -->
+        <div class="gallery-card" onclick="openLightbox('outputs/02_correlation_heatmap.png', '02_correlation_heatmap.png — Workload Correlation Matrix', 'Full Pearson correlation coefficient matrix between all workload features, task waiting queue time, and total server response time.')">
+          <div class="gallery-thumb-wrap">
+            <img src="outputs/02_correlation_heatmap.png" alt="Correlation Heatmap" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <div class="gallery-card-title">02_correlation_heatmap.png</div>
+            <div class="gallery-card-desc">Bivariate Pearson r correlation matrix identifying collinearity and strongest predictors.</div>
+            <div class="gallery-card-footer">
+              <span>Multicollinearity Diagnosis</span>
+              <span>Enlarge ↗</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Workload Scatter Plots -->
+        <div class="gallery-card" onclick="openLightbox('outputs/03_scatter_workload.png', '03_scatter_workload.png — Response Time vs Workload Parameters', 'Trellis scatter plots showing response time against CPU Utilization (%), Memory Consumption (MB), and Active Users.')">
+          <div class="gallery-thumb-wrap">
+            <img src="outputs/03_scatter_workload.png" alt="Workload Scatter" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <div class="gallery-card-title">03_scatter_workload.png</div>
+            <div class="gallery-card-desc">Trellis scatter array demonstrating linearity and variance across compute parameters.</div>
+            <div class="gallery-card-footer">
+              <span>Bivariate Linearity</span>
+              <span>Enlarge ↗</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Scenario A Actual vs Predicted -->
+        <div class="gallery-card" onclick="openLightbox('outputs/A_actual_vs_predicted.png', 'A_actual_vs_predicted.png — Scenario A: Actual vs Predicted Latency', 'OLS model trained strictly on pure workload features (CPU, memory, users, queue wait). R² = 0.002 illustrates failure to capture task execution variance.')">
+          <div class="gallery-thumb-wrap">
+            <img src="outputs/A_actual_vs_predicted.png" alt="Scenario A Actual vs Predicted" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <div class="gallery-card-title">A_actual_vs_predicted.png</div>
+            <div class="gallery-card-desc">Scenario A regression scatter: Blue dots illustrate flat prediction line without execution duration.</div>
+            <div class="gallery-card-footer">
+              <span>Scenario A (R² = 0.002)</span>
+              <span>Enlarge ↗</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Scenario A Residuals -->
+        <div class="gallery-card" onclick="openLightbox('outputs/A_residuals.png', 'A_residuals.png — Scenario A: Residual Diagnostics', 'Residual plot e = y - ŷ vs fitted values for Scenario A. Demonstrates large heteroscedastic spread without duration.')">
+          <div class="gallery-thumb-wrap">
+            <img src="outputs/A_residuals.png" alt="Scenario A Residuals" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <div class="gallery-card-title">A_residuals.png</div>
+            <div class="gallery-card-desc">Residual error spread for Scenario A, diagnosing variance dispersion around zero.</div>
+            <div class="gallery-card-footer">
+              <span>Residual Analysis</span>
+              <span>Enlarge ↗</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Scenario B Actual vs Predicted -->
+        <div class="gallery-card" onclick="openLightbox('outputs/B_actual_vs_predicted.png', 'B_actual_vs_predicted.png — Scenario B: Actual vs Predicted Latency', 'Scenario B model incorporating workload + predicted execution duration. R² = 0.944 closely hugging the ideal y = x line.')">
+          <div class="gallery-thumb-wrap">
+            <img src="outputs/B_actual_vs_predicted.png" alt="Scenario B Actual vs Predicted" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <div class="gallery-card-title">B_actual_vs_predicted.png</div>
+            <div class="gallery-card-desc">Scenario B regression scatter: Green dots tightly clustered along ideal 45° diagonal.</div>
+            <div class="gallery-card-footer">
+              <span>Scenario B (R² = 0.944)</span>
+              <span>Enlarge ↗</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. Scenario B Residuals -->
+        <div class="gallery-card" onclick="openLightbox('outputs/B_residuals.png', 'B_residuals.png — Scenario B: Residual Diagnostics', 'Residual plot e = y - ŷ for Scenario B. Demonstrates tight homoscedastic zero-mean distribution (RMSE = 344.6 ms).')">
+          <div class="gallery-thumb-wrap">
+            <img src="outputs/B_residuals.png" alt="Scenario B Residuals" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <div class="gallery-card-title">B_residuals.png</div>
+            <div class="gallery-card-desc">Homoscedastic residual spread centered tightly on e = 0 with minimal standard error.</div>
+            <div class="gallery-card-footer">
+              <span>Homoscedasticity Verified</span>
+              <span>Enlarge ↗</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div>
+        <strong>Micro Project 13: Server Response Time Prediction Using Regression Models</strong><br>
+        <span>Department of Mathematics & Computer Science • Applied Statistics</span>
+      </div>
+      <div>
+        <span>Local Execution • Matplotlib & Statsmodels Validation</span>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- High-Resolution Lightbox Modal -->
+  <div class="lightbox-modal" id="imageLightboxModal" onclick="closeLightboxOnBackdrop(event)">
+    <div class="lightbox-content">
+      <div class="lightbox-header">
+        <div class="lightbox-title" id="lightboxTitle">Diagnostic Figure View</div>
+        <button class="lightbox-close-btn" onclick="closeLightbox()" title="Close (Esc)">✕</button>
+      </div>
+      <div class="lightbox-body">
+        <img id="lightboxImg" src="" alt="Enlarged Plot">
+      </div>
+      <div class="lightbox-footer">
+        <div id="lightboxDesc">Detailed figure description</div>
+        <a id="lightboxDownloadBtn" href="" download class="btn-secondary" style="font-size: 0.78rem; padding: 4px 10px; text-decoration: none;">Download PNG ↓</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
